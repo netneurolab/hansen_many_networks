@@ -91,7 +91,7 @@ def corr_spin(x, y, spins, nspins):
 set-up
 """
 
-path = '/home/jhansen/projects/proj_many_networks/'
+path = '/home/jhansen/gitrepos/hansen_many_networks/'
 parc = 'Schaefer400'
 
 coords = np.genfromtxt(path+'data/parcellation_files/' + parc + '_coords.txt')

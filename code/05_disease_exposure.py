@@ -40,7 +40,7 @@ def corr_spin(x, y, spins, nspins):
 set-up
 """
 
-path = '/home/jhansen/projects/proj_many_networks/'
+path = '/home/jhansen/gitrepos/hansen_many_networks/'
 
 coords = np.genfromtxt(path+'data/parcellation_files/Cammoun033_coords.txt')
 coords = coords[:, -3:]

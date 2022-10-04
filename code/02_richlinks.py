@@ -154,7 +154,7 @@ def rich_feeder_peripheral(x, sc, max_k=None, stat='median'):
 set-up
 """
 
-path = '/home/jhansen/projects/proj_many_networks/'
+path = '/home/jhansen/gitrepos/hansen_many_networks/'
 parc = 'Schaefer400'
 
 coords = np.genfromtxt(path+'data/parcellation_files/' + parc + '_coords.txt')

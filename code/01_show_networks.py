@@ -198,7 +198,7 @@ def match_length_degree_distribution(data, eu_distance, nbins=10, nswap=None, se
 set-up
 """
 
-path = '/home/jhansen/projects/proj_many_networks/'
+path = '/home/jhansen/gitrepos/hansen_many_networks/'
 parc = 'Schaefer400'
 
 coords = np.genfromtxt(path+'data/parcellation_files/' + parc + '_coords.txt')
