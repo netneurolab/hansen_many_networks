@@ -119,7 +119,9 @@ plt.savefig(path+'figures/' + parc + '/plot_scree.eps')
 gradient correlation matrix
 """
 
+pca = PCA(n_components=1)
 pc1 = np.array([pca.fit_transform(zscore(networks[network])) for network in networks.keys()])
+plt.figure()
 sns.heatmap(np.corrcoef(np.squeeze(pc1)),
             square=True, cmap=cmap_div,
             vmin=-1, vmax=1, linewidths=.5,
@@ -151,7 +153,7 @@ ax.set_xlabel('gamma parameter')
 ax.set_ylabel('number of communities')
 # plt.savefig(path+'figures/' + parc + '/plot_ncommun_gamma.eps')
 ax.set_ylim([0, 40])
-plt.savefig(path+'figures/eps/plot_ncommun_gamma_zoom.eps')
+plt.savefig(path+'figures/' + parc + '/plot_ncommun_gamma_zoom.eps')
 
 """
 community assignment brains

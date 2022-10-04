@@ -6,6 +6,7 @@ Author: Justine Y Hansen
 
 import numpy as np
 import pandas as pd
+import nibabel as nib
 import matplotlib.pyplot as plt
 from matplotlib import cm
 import seaborn as sns
@@ -190,8 +191,8 @@ RSN and VE classification
 """
 
 if parc == "Cammoun033":
-    info = datasets.fetch_cammoun2012()['info']
-    rsnlabels = list(info.query('scale == "scale033" ^ structure == "cortex"')['yeo_7'])
+    info = pd.read_csv(datasets.fetch_cammoun2012()['info'])
+    rsnlabels = list(info.query('scale == "scale033" & structure == "cortex"')['yeo_7'])
 elif parc == "Schaefer400" or parc == "Schaefer100":
     labelinfo = np.loadtxt(path+'data/parcellation_files/' + parc + '_7Networks_order_info.txt')
     rsnlabels = []
@@ -294,8 +295,20 @@ save_conte69(brains, path+'figures/'+parc+'surface_strength/medianrank')
 # compare with evolutionary expansion
 evoexp = fetch_annotation(source='hill2010', desc='evoexp')
 evoexp = fslr_to_fslr(evoexp, target_density='32k', hemi='R')
-parcellater = Parcellater((lhlabels, rhlabels), 'fslr')
-evoexp_parc = parcellater.fit_transform(evoexp, 'fslr', hemi='R')
+parcimg = nib.load(rhlabels).agg_data()
+parcimg = parcimg - np.min(parcimg[parcimg != 0])
+evoexp_parc = np.zeros((np.max(parcimg)+1, ))
+for i in range(len(evoexp_parc)):
+    evoexp_parc[i] = np.nanmean(evoexp[0].agg_data()[parcimg == i])
 if parc == 'Cammoun033':
     evoexp_parc = np.delete(evoexp_parc, 3)  # remove corpus callosum
 r, p = corr_spin(evoexp_parc, netrankmed[int(nnodes/2):], spins[:int(nnodes/2), :], nnull)
+
+fig, ax = plt.subplots()
+ax.scatter(evoexp_parc, netrankmed[int(nnodes/2):])
+ax.set_xlabel('evolutionary expansion')
+ax.set_ylabel('cross-modal hubness')
+ax.set_title('r = ' + str(r)[:5] + ', pspin = ' + str(p)[:5])
+ax.set_aspect(1./ax.get_data_ratio())
+plt.tight_layout()
+plt.savefig(path+'figures/'+parc+'/scatter_evoexp.eps')

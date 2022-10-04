@@ -20,7 +20,7 @@ def community_detection(A, gamma_range):
         i += 1
     return(consensus, qall, zrand)
 
-path = '/home/jhansen/projects/proj_many_networks/'
+path = '/home/jhansen/gitrepos/hansen_many_networks/'
 parc = 'Schaefer400'
 
 # load networks
@@ -54,7 +54,7 @@ output = Parallel(n_jobs=36)(delayed(community_detection)(networks[network], gam
 for network in range(len(output)):
     np.save(path+'results/community_detection_' + parc + '/community_assignments_' + list(networks.keys())[network] + '.npy',
             output[network][0])
-    np.save(path+'results/community_detection' + parc + '/community_qall_' + list(networks.keys())[network] + '.npy',
+    np.save(path+'results/community_detection_' + parc + '/community_qall_' + list(networks.keys())[network] + '.npy',
             np.array(output[network][1]))
-    np.save(path+'results/community_detection' + parc + '/community_zrand_' + list(networks.keys())[network] + '.npy',
+    np.save(path+'results/community_detection_' + parc + '/community_zrand_' + list(networks.keys())[network] + '.npy',
             np.array(output[network][2]))

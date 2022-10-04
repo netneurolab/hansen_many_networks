@@ -345,9 +345,9 @@ lines = []
 fig, ax = plt.subplots()
 for i, network in enumerate(netrank.keys()):
     rfp[network], pvals[network] = rich_feeder_peripheral(netrank[network], sc, 50)
-    lines.append(ax.plot(rfp[network][2, :], color=Safe_7.mpl_colors[i], linewidth=.5, label=network)[0])
-    pidx = np.where(pvals[network][2, :] < 0.05)
-    ax.scatter(pidx, rfp[network][2, pidx],
+    lines.append(ax.plot(rfp[network][0, :], color=Safe_7.mpl_colors[i], linewidth=.5, label=network)[0])
+    pidx = np.where(pvals[network][0, :] < 0.05)
+    ax.scatter(pidx, rfp[network][0, pidx],
                s=20, linewidths=None, color=Safe_7.mpl_colors[i])
 ax.legend(handles=lines)
 ax.set_xlabel('degree threshold')
