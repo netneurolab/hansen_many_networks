@@ -49,7 +49,7 @@ def match_length_degree_distribution(data, eu_distance, nbins=10, nswap=None, se
     ----------
     data : (N, N) array-like
         weighted or binary symmetric connectivity matrix.
-    distance : (N, N) array-like.3
+    distance : (N, N) array-like
         symmetric distance matrix.
     nbins : int
         number of distance bins (edge length matrix is performed by swapping
