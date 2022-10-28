@@ -59,7 +59,7 @@ mask = np.triu(np.ones(nnodes), 1) > 0
 # from https://github.com/netneurolab/hansen_crossdisorder_vulnerability
 enigmapath = '/home/jhansen/gitrepos/hansen_crossdisorder_vulnerability/'
 disease_profiles = zscore(np.genfromtxt(enigmapath+'data/enigma_ct.csv', delimiter=','))
-disease_names = np.load(enigmapath+'data/isorders.npy')
+disease_names = np.load(enigmapath+'data/disorders.npy')
 
 # load networks
 gc = np.load(path+'data/Cammoun033/gene_coexpression.npy')
@@ -136,4 +136,4 @@ sns.heatmap(nn_corrs[:, :, 0], annot=True, linewidths=.5,
             cmap=cmap_div, vmin=-1, vmax=1,
             xticklabels=disease_names, yticklabels=networks.keys())
 plt.tight_layout()
-plt.savefig(path+'figures/heatmap_disease_nncorr.svg')
+plt.savefig(path+'figures/Cammoun033/heatmap_disease_nncorr_reg.svg')

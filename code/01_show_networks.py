@@ -194,6 +194,25 @@ def match_length_degree_distribution(data, eu_distance, nbins=10, nswap=None, se
     return data, W
 
 
+def corr_spin(x, y, spins, nspins):
+    """
+    version of corr_spin applied to matrices
+    """
+    nnodes = len(x)
+    mask = np.triu(np.ones(nnodes), 1) > 0
+    rho, _ = spearmanr(x[mask], y[mask])
+    null = np.zeros((nspins,))
+
+    # null correlation
+    for i in range(nspins):
+        ynull = y[np.ix_(spins[:, i], spins[:, i])]
+        null[i], _ = spearmanr(x[mask], ynull[mask])
+
+    pval = (1 + sum(abs((null - np.mean(null))) >
+                    abs((rho - np.mean(null))))) / (nspins + 1)
+    return rho, pval
+
+
 """
 set-up
 """
@@ -221,7 +240,8 @@ networks = {"gc" : gc,
             "mc" : mc,
             "hc" : hc,
             "ec" : ec,
-            "ts" : ts}
+            "ts" : ts,
+            "cs" : cs}
 
 # normalize networks
 for network in networks.keys():

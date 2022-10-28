@@ -214,7 +214,7 @@ n, bin_edges, _ = plt.hist(eu_distance[mask],
                            edgecolor='black')
 bins = np.digitize(eu_distance[mask], bin_edges[:-1])
 
-fig, ax = plt.subplots(figsize=(7, 4))
+fig, ax = plt.subplots(figsize=(len(netrank.keys()), 4))
 run_null = False
 
 if run_null:

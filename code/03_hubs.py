@@ -152,6 +152,7 @@ for network in networks.keys():
 
     vec = networks[network][mask]
     net =  np.zeros(networks[network].shape)
+    # schaefer400: 0.005; schaefer100: 0.05; cammoun033: 0.1
     thresh = np.flipud(np.sort(vec))[int(np.floor(0.005 * len(vec)))]
     net[networks[network] >= thresh] = networks[network][networks[network] >= thresh]
     edges = np.where(net != 0)
@@ -194,7 +195,8 @@ if parc == "Cammoun033":
     info = pd.read_csv(datasets.fetch_cammoun2012()['info'])
     rsnlabels = list(info.query('scale == "scale033" & structure == "cortex"')['yeo_7'])
 elif parc == "Schaefer400" or parc == "Schaefer100":
-    labelinfo = np.loadtxt(path+'data/parcellation_files/' + parc + '_7Networks_order_info.txt')
+    labelinfo = np.loadtxt(path+'data/parcellation_files/' + parc + '_7Networks_order_info.txt',
+                           dtype='str', delimiter='tab')
     rsnlabels = []
     for row in range(0, len(labelinfo), 2):
         rsnlabels.append(labelinfo[row].split('_')[2])
