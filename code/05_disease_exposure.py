@@ -88,7 +88,9 @@ p0 = [1, -0.05, -0.1]  # initial parameter guess
 pars = {}  # exponential curve variables
 networks_reg = {}  # distance-regressed similarity matrices (upper triangular)
 for network in networks.keys():
-    pars[network], _ = curve_fit(exponential, eu_distance[mask], networks[network][mask], p0)
+    pars[network], _ = curve_fit(exponential, eu_distance[mask],
+                                 networks[network][mask], p0,
+                                 bounds=([0, -10, -5], [10, 0, 5]))
     regressed = regress_dist(networks[network][mask], eu_distance[mask], pars[network])
     networks_reg[network] = np.zeros((nnodes, nnodes))
     networks_reg[network][np.triu(np.ones(nnodes, dtype=bool), 1)] = regressed

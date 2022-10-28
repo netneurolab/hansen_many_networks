@@ -240,8 +240,7 @@ networks = {"gc" : gc,
             "mc" : mc,
             "hc" : hc,
             "ec" : ec,
-            "ts" : ts,
-            "cs" : cs}
+            "ts" : ts}
 
 # normalize networks
 for network in networks.keys():

@@ -168,7 +168,7 @@ for network in networks.keys():
         y2 = coords[edge_j, 1]
         ax.plot([x1, x2], [y1, y2], c=c, linewidth=w, alpha=1, zorder=0)
     ax.scatter(coords[:, 0], coords[:, 1], c='k', clip_on=False, alpha=1,
-               s=scale_values(np.sum(networks[network], axis=1), 2, 10)**2.15,
+               s=scale_values(np.sum(netrank[network], axis=1), 2, 10)**2.15,
                linewidths=0, zorder=1)
     ax.set_aspect('equal')
     ax.set_title(network)
