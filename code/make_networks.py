@@ -22,6 +22,8 @@ from neuromaps.parcellate import Parcellater
 import abagen
 from scipy.stats import zscore
 from sklearn.decomposition import PCA
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 """
 set-up parcellation
@@ -191,9 +193,7 @@ electrophysiological connectivity (MEG)
 
 megfc = np.load(path+'data/' + parc + '/groupFCmeg_aec_orth_' + parc + '.npy.npz')
 mask = np.triu(np.ones(nnodes), 1) > 0
-megfc_vec =  np.zeros((len(megfc['bands']), len(megfc['megfc'][0, :, :][mask])))
-for i in range(len(megfc['bands'])):
-    megfc_vec[i, :] = megfc['megfc'][i, :, :][mask]
+megfc_vec = np.array([megfc['megfc'][i, :, :][mask] for i in range(megfc['megfc'].shape[0])])
 pca = PCA(n_components=1)
 pc1 = pca.fit_transform(megfc_vec.T)
 mc = np.zeros((nnodes, nnodes))
@@ -203,6 +203,28 @@ np.fill_diagonal(mc, 1)
 np.savetxt(path + 'data/' + parc + '/electrophysiological_connectivity.csv', mc, delimiter=',')
 np.save(path + 'data/' + parc + '/electrophysiological_connectivity.npy', mc)
 
+# supplementary figure
+
+concated = np.concatenate((megfc['megfc'], np.expand_dims(mc, axis=0)))
+fig, ax = plt.subplots(1, 7, figsize=(30, 4))
+for n in range(concated.shape[0]):
+    sns.heatmap(concated[n, :, :], square=True, cmap=cmap_div,
+                vmin = -max(abs(concated[n, :, :][mask])),
+                vmax = max(abs(concated[n, :, :][mask])),
+                ax=ax[n], xticklabels=False, yticklabels=False,
+                cbar=False, rasterized=True)
+    ax[n].set_title(np.append(megfc['bands'], 'pc1')[n])
+plt.tight_layout()
+plt.savefig(path+'figures/'+parc+'/heatmap_supp_megnetworks.eps')
+
+megfc_vec = np.concatenate((megfc_vec, mc[mask].reshape(1, -1)))
+plt.rcParams['svg.fonttype'] = 'none'
+fig, ax = plt.subplots()
+sns.heatmap(np.corrcoef(megfc_vec), square=True, cmap=cmap_div,
+                        vmin=-1, vmax=1, xticklabels=np.append(megfc['bands'], 'pc1'),
+                        yticklabels=np.append(megfc['bands'], 'pc1'), annot=True)
+plt.tight_layout()
+plt.savefig(path+'figures/'+parc+'/heatmap_megcorrs.svg')
 
 """
 temporal similarity
@@ -210,4 +232,4 @@ temporal similarity
 
 # comes from running hctsa (https://github.com/benfulcher/hctsa)
 # on the fMRI time-series, as per Shafiei et al., 2020 (https://doi.org/10.7554/eLife.62116)
-# takes a long time (like, a month for Schaefer100)
+# takes a while (like, a couple days to a week for Schaefer 100 with big time parallelization)

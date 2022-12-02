@@ -32,7 +32,7 @@ def compare_exp_lin(x, y, pars):
     linreg = LinearRegression()
     linreg.fit(x.reshape(-1, 1), y.reshape(-1, 1))
     linfit = linreg.predict(x.reshape(-1, 1))
-    linresid = sum((y.reshape(-1, 1) - linfit)**2)
+    linresid = np.squeeze(sum((y.reshape(-1, 1) - linfit)**2))
     return expresid, linresid
 
 

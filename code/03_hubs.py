@@ -87,7 +87,6 @@ def corr_spin(x, y, spins, nspins):
     return rho, pval
 
 
-
 """
 set-up
 """
@@ -264,9 +263,10 @@ cross-modality network
 """
 
 # plot cross-modality edge ranks
-fig, ax = plt.subplots(figsize=(5, 5))
+fig = plt.figure(figsize=(5, 5))
+ax = plt.axes(projection='3d')
 
-edgerank = np.sum(np.array([netrank[network] for network in netrank.keys()]), axis=0)
+edgerank = np.median(np.array([netrank[network] for network in netrank.keys()]), axis=0)
 thresh = np.flipud(np.sort(edgerank[mask]))[int(np.floor(0.005 * len(edgerank[mask])))]
 edges = np.where(edgerank >= thresh)
 edge_colours = get_color_distribution(edgerank[edges],
@@ -279,8 +279,10 @@ for edge_i, edge_j, c, w in zip(edges[0][idx], edges[1][idx], edge_colours[idx, 
     x2 = coords[edge_j, 0]
     y1 = coords[edge_i, 1]
     y2 = coords[edge_j, 1]
-    ax.plot([x1, x2], [y1, y2], c=c, linewidth=w, alpha=1, zorder=0)
-ax.scatter(coords[:, 0], coords[:, 1], c='k', clip_on=False, alpha=1,
+    z1 = coords[edge_i, 2]
+    z2 = coords[edge_j, 2]
+    ax.plot3D([x1, x2], [y1, y2], [z1, z2], c=c, linewidth=w, alpha=1, zorder=0)
+ax.scatter3D(coords[:, 0], coords[:, 1], coords[:, 2], c='k', clip_on=False, alpha=1,
            s=scale_values(np.median(edgerank, axis=1), 2, 10)**2.15,
            linewidths=0, zorder=1)
 ax.set_aspect('equal')

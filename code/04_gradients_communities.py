@@ -144,16 +144,20 @@ commun = dict([])
 for network in networks.keys():
     commun[network] = np.load(path+'results/community_detection_' + parc + '/community_assignments_' + network + '.npy')
 
-fig, ax = plt.subplots(figsize=(7, 4))
+fig, ax = plt.subplots(2, 1, figsize=(7, 8))
 for i, network in enumerate(networks.keys()):
-    ax.plot(gamma_range, np.max(commun[network], axis=0),
-            c=Safe_7.mpl_colors[i], label=network)
-ax.legend()
-ax.set_xlabel('gamma parameter')
-ax.set_ylabel('number of communities')
-# plt.savefig(path+'figures/' + parc + '/plot_ncommun_gamma.eps')
-ax.set_ylim([0, 40])
-plt.savefig(path+'figures/' + parc + '/plot_ncommun_gamma_zoom.eps')
+    nrepeats = [np.unique(commun[network][:, g], return_counts=True)[1] for g in range(commun[network].shape[1])]
+    ncommun = [sum(nrepeats[g] > 1) for g in range(len(nrepeats))]
+    ax[0].plot(gamma_range, np.max(commun[network], axis=0),
+               c=Safe_7.mpl_colors[i], label=network)
+    ax[1].plot(gamma_range, ncommun,
+               c=Safe_7.mpl_colors[i], label=network)
+ax[0].legend()
+ax[1].set_xlabel('gamma parameter')
+ax[0].set_ylabel('number of communities')
+ax[1].set_ylabel('number of communities')
+ax[0].set_ylim([0, 40])
+plt.savefig(path+'figures/' + parc + '/plot_ncommun_gamma.eps')
 
 """
 community assignment brains
