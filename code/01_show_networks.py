@@ -273,6 +273,13 @@ for n, network in enumerate(networks.keys()):
 plt.tight_layout()
 plt.savefig(path+'figures/'+parc+'/heatmap_networks.eps')
 
+# plot SC also
+
+sns.heatmap(sc, square=True, cmap=cmap_blue,
+            xticklabels=False, yticklabels=False,
+            cbar=False, rasterized=True)
+plt.savefig(path+'figures/'+parc+'/heatmap_sc.eps')
+
 """
 distance hexplot
 """
@@ -283,16 +290,54 @@ p0 = [1, -0.05, -0.1]  # initial parameter guess
 for network in networks.keys():
     h = sns.jointplot(x=eu_distance[mask], y=networks[network][mask], kind='hex',
                       palette=cmap_blue, rasterized=True)
-    h.set_axis_labels('Euclidean distance', network, fontsize=8)
-    plt.savefig(path+'figures/' + parc + '/hexplot_' + network + '.eps')
 
     # compare exponential fit with linear fit
     pars, _ = curve_fit(exponential, eu_distance[mask],
                         networks[network][mask], p0=p0,
                         bounds=([0, -10, -5], [10, 0, 5]))
-    print(network)
-    print(compare_exp_lin(eu_distance[mask], networks[network][mask], pars))
-    print('---------')
+    exp_r, lin_r = compare_exp_lin(eu_distance[mask], networks[network][mask], pars)
+    if exp_r < lin_r:
+        h.ax_joint.plot(np.arange(10, 160, 1), exponential(np.arange(10, 160, 1), *pars))
+        h.fig.suptitle('y = ' + str(pars[0])[:4]
+                       + ' * exp(' + str(pars[1])[:5]
+                       + ' * x) + ' + str(pars[2])[:5])
+    else:
+        sns.regplot(x=eu_distance[mask], y=networks[network][mask], scatter=False, ci=None)
+        h.fig.suptitle("spearman r =" + str(spearmanr(eu_distance[mask],
+                                                      networks[network][mask])[0])[:5])
+    h.set_axis_labels('Euclidean distance', network, fontsize=8)
+    h.fig.tight_layout()
+    h.fig.subplots_adjust(top=0.95)
+
+    h.fig.savefig(path+'figures/' + parc + '/hexplot_' + network + '.eps')
+
+# geodesic distance (within-hemisphere only)
+gd_distance = np.load(path+'data/' + parc + '/surface_distance.npy')
+keep = np.where(gd_distance[mask] != 0)[0]
+for network in networks.keys():
+    h = sns.jointplot(x=gd_distance[mask][keep], y=networks[network][mask][keep], kind='hex',
+                      palette=cmap_blue, rasterized=True)
+
+    # compare exponential fit with linear fit
+    pars, _ = curve_fit(exponential, gd_distance[mask][keep],
+                        networks[network][mask][keep], p0=p0,
+                        bounds=([0, -10, -5], [10, 0, 5]))
+    exp_r, lin_r = compare_exp_lin(gd_distance[mask][keep], networks[network][mask][keep], pars)
+    if exp_r < lin_r:
+        h.ax_joint.plot(np.arange(10, 220, 1), exponential(np.arange(10, 220, 1), *pars))
+        h.fig.suptitle('y = ' + str(pars[0])[:4]
+                       + ' * exp(' + str(pars[1])[:5]
+                       + ' * x) + ' + str(pars[2])[:5])
+    else:
+        sns.regplot(x=gd_distance[mask][keep], y=networks[network][mask][keep], scatter=False, ci=None)
+        h.fig.suptitle("spearman r =" + str(spearmanr(gd_distance[mask][keep],
+                                                      networks[network][mask][keep])[0])[:5])
+    
+    h.set_axis_labels('Geodesic distance', network, fontsize=8)
+    h.fig.tight_layout()
+    h.fig.subplots_adjust(top=0.95)
+
+    h.fig.savefig(path+'figures/' + parc + '/hexplot_' + network + '_gd.eps')
 
 
 """
