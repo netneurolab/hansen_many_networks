@@ -9,13 +9,11 @@ import pandas as pd
 import nibabel as nib
 import matplotlib.pyplot as plt
 from matplotlib import cm
-import seaborn as sns
 from scipy.stats import rankdata, spearmanr
 from palettable.cartocolors.qualitative import Safe_7
 from netneurotools import plotting, stats, datasets
 from neuromaps.datasets import fetch_annotation
 from neuromaps.transforms import fslr_to_fslr
-from neuromaps.parcellate import Parcellater
 import mayavi
 
 
@@ -147,7 +145,8 @@ plot strongest edges
 
 for network in networks.keys():
 
-    fig, ax = plt.subplots(figsize=(5, 5))
+    fig, ax = plt.subplots(figsize=(10, 10),
+                           subplot_kw=dict(projection='3d'))
 
     vec = networks[network][mask]
     net =  np.zeros(networks[network].shape)
@@ -165,13 +164,23 @@ for network in networks.keys():
         x2 = coords[edge_j, 0]
         y1 = coords[edge_i, 1]
         y2 = coords[edge_j, 1]
-        ax.plot([x1, x2], [y1, y2], c=c, linewidth=w, alpha=1, zorder=0)
-    ax.scatter(coords[:, 0], coords[:, 1], c='k', clip_on=False, alpha=1,
+        z1 = coords[edge_i, 2]
+        z2 = coords[edge_j, 2]
+        ax.plot([x1, x2], [y1, y2], [z1, z2],
+                c=c, linewidth=w, alpha=1, zorder=0)
+    ax.scatter(coords[:, 0], coords[:, 1], coords[:, 2],
+               c='k', clip_on=False, alpha=1,
                s=scale_values(np.sum(netrank[network], axis=1), 2, 10)**2.15,
                linewidths=0, zorder=1)
+    ax.axis('off')
     ax.set_aspect('equal')
     ax.set_title(network)
-    plt.savefig(path+'figures/'+parc+'/plot_strongest_edges_' + network + '.eps')
+    ax.view_init(90, 180)
+    fig.savefig(path+'figures/'+parc+'/plot_strongest_edges_' + network + '_axial.eps')
+    ax.view_init(0, 180)
+    fig.savefig(path+'figures/'+parc+'/plot_strongest_edges_' + network + '_sagittal.eps')
+    ax.view_init(0, 90)
+    fig.savefig(path+'figures/'+parc+'/plot_strongest_edges_' + network + '_coronal.eps')
 
 
 """
