@@ -12,9 +12,30 @@ import snf, itertools
 import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
 from scipy.spatial.distance import squareform, pdist
+from scipy.optimize import curve_fit
 from scipy.stats import spearmanr
+from sklearn.linear_model import LinearRegression
 from netneurotools import datasets
 from palettable.cartocolors.qualitative import Safe_7
+
+
+def exponential(x, a, b, c):
+    return a*np.exp(b*x)+c
+
+
+def compare_exp_lin(x, y, pars):
+    """
+    compare exponential fit to linear fit.
+    x and y should be edge x 1 arrays
+    pars should be a len=3 array of exponential parameters
+    """
+    expfit = exponential(x, pars[0], pars[1], pars[2])
+    expresid = sum((y - expfit)**2)
+    linreg = LinearRegression()
+    linreg.fit(x.reshape(-1, 1), y.reshape(-1, 1))
+    linfit = linreg.predict(x.reshape(-1, 1))
+    linresid = np.squeeze(sum((y.reshape(-1, 1) - linfit)**2))
+    return expresid, linresid
 
 
 """
@@ -85,10 +106,26 @@ plt.savefig(path+'figures/'+parc+'/heatmap_fused.eps')
 
 # distance
 eu_distance = squareform(pdist(coords, metric="euclidean"))
+p0 = [1, -0.05, -0.1]  # initial parameter guess
 h = sns.jointplot(x=eu_distance[mask], y=fused[mask], kind='hex',
                   palette=cmap_blue, rasterized=True)
-h.set_axis_labels('Euclidean distance', 'fused network', fontsize=8)
-plt.savefig(path+'figures/'+parc+'/hexplot_fused.eps')
+pars, _ = curve_fit(exponential, eu_distance[mask],
+                    fused[mask], p0=p0,
+                    bounds=([0, -10, -5], [10, 0, 5]))
+exp_r, lin_r = compare_exp_lin(eu_distance[mask], fused[mask], pars)
+if exp_r < lin_r:
+    h.ax_joint.plot(np.arange(10, 160, 1), exponential(np.arange(10, 160, 1), *pars))
+    h.fig.suptitle('y = ' + str(pars[0])[:5]
+                   + ' * exp(' + str(pars[1])[:5]
+                   + ' * x) + ' + str(pars[2])[:5])
+else:
+    sns.regplot(x=eu_distance[mask], y=fused[mask], scatter=False, ci=None)
+    h.fig.suptitle("spearman r =" + str(spearmanr(eu_distance[mask],
+                                                  fused[mask])[0])[:5])
+h.set_axis_labels('Euclidean distance', 'fused', fontsize=8)
+h.fig.tight_layout()
+h.fig.subplots_adjust(top=0.95)
+h.fig.savefig(path+'figures/' + parc + '/hexplot_fused.eps')
 
 """
 structure
