@@ -10,13 +10,15 @@ import pandas as pd
 import seaborn as sns
 import snf, itertools
 import matplotlib.pyplot as plt
+from matplotlib import cm
 from matplotlib.colors import ListedColormap
 from scipy.spatial.distance import squareform, pdist
 from scipy.optimize import curve_fit
 from scipy.stats import spearmanr
 from sklearn.linear_model import LinearRegression
-from netneurotools import datasets
+from netneurotools import datasets, plotting
 from palettable.cartocolors.qualitative import Safe_7
+import mayavi
 
 
 def exponential(x, a, b, c):
@@ -37,6 +39,59 @@ def compare_exp_lin(x, y, pars):
     linresid = np.squeeze(sum((y.reshape(-1, 1) - linfit)**2))
     return expresid, linresid
 
+def scale_values(values, vmin, vmax, axis=None):
+    s = (values - values.min(axis=axis)) / (values.max(axis=axis) - values.min(axis=axis))
+    s = s * (vmax - vmin)
+    s = s + vmin
+    return s
+
+
+def get_color_distribution(scores, cmap="viridis", vmin=None, vmax=None):
+
+    '''
+    Function to get a color for individual values of a distribution of scores.
+    Copied from VinceBaz/projects_networks/projects_networks/colors.py
+    '''
+
+    n = len(scores)
+
+    if vmin is None:
+        vmin = np.amin(scores)
+    if vmax is None:
+        vmax = np.amax(scores)
+
+    cmap = cm.get_cmap(cmap, 256)
+    new_colors = cmap(np.linspace(0, 1, 256))
+
+    if vmin != vmax:
+        scaled = (scores - vmin)/(vmax - vmin) * 255
+        scaled[scaled < 0] = 0
+        scaled[scaled > 255] = 255
+    else:
+        scaled = np.zeros((n)) + 128
+
+    c = np.zeros((n, 4))
+    for i in range(n):
+        c[i] = new_colors[int(scaled[i]), :]
+
+    return c
+
+
+def save_conte69(brains, outpath):
+    mayavi.mlab.figure(brains[0]).scene.parallel_projection = True
+    mayavi.mlab.figure(brains[1]).scene.parallel_projection = True
+    mayavi.mlab.figure(brains[0]).scene.background = (1, 1, 1)
+    mayavi.mlab.figure(brains[1]).scene.background = (1, 1, 1)
+
+    mayavi.mlab.savefig(outpath + '_lhlateral.png', figure=brains[0])
+    mayavi.mlab.savefig(outpath + '_rhlateral.png', figure=brains[1])
+
+    # medial view
+    mayavi.mlab.view(azimuth=0, elevation=90, distance=450, figure=brains[0])
+    mayavi.mlab.view(azimuth=0, elevation=-90, distance=450, figure=brains[1])
+
+    mayavi.mlab.savefig(outpath + '_lhmedial.png', figure=brains[0])
+    mayavi.mlab.savefig(outpath + '_rhmedial.png', figure=brains[1])
 
 """
 set-up
@@ -49,6 +104,10 @@ coords = np.genfromtxt(path+'data/parcellation_files/' + parc + '_coords.txt')
 coords = coords[:, -3:]
 nnodes = len(coords)
 mask = np.triu(np.ones(nnodes), 1) > 0
+
+# labels for plotting
+lhlabels = path+'data/parcellation_files/' + parc + '_order_hemi-L.label.gii'
+rhlabels = path+'data/parcellation_files/' + parc + '_order_hemi-R.label.gii'
 
 # load networks
 gc = np.load(path+'data/' + parc + '/gene_coexpression.npy')
@@ -126,6 +185,53 @@ h.set_axis_labels('Euclidean distance', 'fused', fontsize=8)
 h.fig.tight_layout()
 h.fig.subplots_adjust(top=0.95)
 h.fig.savefig(path+'figures/' + parc + '/hexplot_fused.eps')
+
+"""
+strongest edges and hubs
+"""
+
+fig, ax = plt.subplots(figsize=(10, 10),
+                       subplot_kw=dict(projection='3d'))
+fused_norm = np.arctanh(fused)
+vec = fused_norm[mask]
+net =  np.zeros(fused_norm.shape)
+# schaefer400: 0.005; schaefer100: 0.05; cammoun033: 0.1
+thresh = np.flipud(np.sort(vec))[int(np.floor(0.005 * len(vec)))]
+net[fused_norm >= thresh] = fused_norm[fused_norm >= thresh]
+edges = np.where(net != 0)
+edge_colours = get_color_distribution(net[edges],
+                                      vmin=np.min(net[edges])-3*np.std(net[edges]),
+                                      cmap='Greys')
+linewidths = scale_values(net[edges], 0.3, 1.2)
+idx = np.argsort(linewidths)  # plot in order of edge strength
+for edge_i, edge_j, c, w in zip(edges[0][idx], edges[1][idx], edge_colours[idx, :], linewidths[idx]):
+    x1 = coords[edge_i, 0]
+    x2 = coords[edge_j, 0]
+    y1 = coords[edge_i, 1]
+    y2 = coords[edge_j, 1]
+    z1 = coords[edge_i, 2]
+    z2 = coords[edge_j, 2]
+    ax.plot([x1, x2], [y1, y2], [z1, z2],
+            c=c, linewidth=w, alpha=1, zorder=0)
+ax.scatter(coords[:, 0], coords[:, 1], coords[:, 2],
+           c='k', clip_on=False, alpha=1,
+           s=scale_values(np.sum(fused_norm, axis=1), 2, 10)**2.15,
+           linewidths=0, zorder=1)
+ax.axis('off')
+ax.set_aspect('equal')
+ax.set_title(network)
+ax.view_init(90, 180)
+fig.savefig(path+'figures/'+parc+'/plot_strongest_edges_fused_axial.eps')
+ax.view_init(0, 180)
+fig.savefig(path+'figures/'+parc+'/plot_strongest_edges_fused_sagittal.eps')
+ax.view_init(0, 90)
+fig.savefig(path+'figures/'+parc+'/plot_strongest_edges_fused_coronal.eps')
+
+brains = plotting.plot_conte69(np.sum(fused_norm, axis=1),
+                               lhlabels, rhlabels,
+                               surf='inflated', colormap='YlGnBu',
+                               colorbar=False)
+save_conte69(brains, path+'figures/' + parc + '/surface_strength/fused')
 
 """
 structure
