@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.8250809.svg)](https://doi.org/10.5281/zenodo.8250809)
+
 # Multimodal, multiscale connectivity blueprints of the cerebral cortex
 
 This repository contains code and data used and created in support of my project "Multimodal, multiscale connectivity blueprints of the cerebral cortex", now up on [bioRxiv](https://www.biorxiv.org/content/10.1101/2022.12.02.518906v1.abstract).
