@@ -2,7 +2,7 @@
 
 # Multimodal, multiscale connectivity blueprints of the cerebral cortex
 
-This repository contains code and data used and created in support of my project "Integrating multimodal and multiscale connectivity blueprints of the human cerebral cortex in health and disease", now published in [PLOS Biology]([https://www.biorxiv.org/content/10.1101/2022.12.02.518906v1.abstract](https://journals.plos.org/plosbiology/article?id=10.1371/journal.pbio.3002314).
+This repository contains code and data used and created in support of my project "Integrating multimodal and multiscale connectivity blueprints of the human cerebral cortex in health and disease", now published in [PLOS Biology]([https://www.biorxiv.org/content/10.1101/2022.12.02.518906v1.abstract](https://journals.plos.org/plosbiology/article?id=10.1371/journal.pbio.3002314)).
 All code was written in Python.
 
 All connectivity modes are available in three parcellation resolutions (Cammoun-033/Desikan-Killiany, Schaefer-100 (7 Networks order), Schaefer-400 (7 Networks order)) - see [data](data/).
